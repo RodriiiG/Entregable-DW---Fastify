@@ -1,7 +1,7 @@
 import type { FastifyInstance, FastifySchema } from "fastify";
 
 async function exampleRoutes (fastify: FastifyInstance, options: object) {
-     fastify.get('/example',{
+    fastify.get('/example',{
         schema: {
             summary: "Ruta de Ejemplo",
             description: 'Descripción de la ruta de ejemplo',
