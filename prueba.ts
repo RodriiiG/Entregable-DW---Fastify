@@ -1,5 +1,5 @@
 import fastify from 'fastify';
-import usuariosRoutes from './src/Rutas/usuarios-routes.ts';
+import usuariosRoutes from './src/Rutas/usuarios/usuarios-routes.ts';
 import { Type } from '@sinclair/typebox';
 import { error } from 'console';
 import type { TypeBoxTypeProvider, FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
