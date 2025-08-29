@@ -12,6 +12,8 @@ const usuarios : Usuario[] = [
     {id_usuario: 3, nombre: "Gastón", isAdmin: false},
 ];
 
+let ultimoId = usuarios.length + 1;
+
 const usuarioSchema ={
     type: "object",
     properties: {
@@ -21,8 +23,18 @@ const usuarioSchema ={
 
     },
     required : ["nombre", "id_usuario", "isAdmin"],
-    additionalProperties: true
+    additionalProperties: true,
 }
+
+const usuarioPostSchema = {
+    type: "object",
+    properties: {
+    nombre: { type: "string", minLength: 2 },
+    isAdmin: { type: "boolean", default: false },
+    },
+    required: ["nombre"],
+    additionalProperties: true,
+};
 
 async function usuariosRoutes (fastify: FastifyInstance, options: object){
     fastify.get('/usuarios',{
@@ -54,7 +66,7 @@ async function usuariosRoutes (fastify: FastifyInstance, options: object){
     fastify.put('/usuarios/:id',{
         schema:{
             summary: "Editar completamente un usuario",
-            description: 'Cambiar nombre de usuario',
+            description: 'Cambiar nombre de usuario y determinar isAdmin',
             tags: ["usuarios"],
             params: {
                 type: "object",
@@ -96,9 +108,96 @@ async function usuariosRoutes (fastify: FastifyInstance, options: object){
         usuario.nombre = body.nombre;
         usuario.isAdmin = body.isAdmin;
 
-        return reply.code(204).send();
+        return reply.code(204).send(usuario);
     });
-};
+
+    
+    fastify.post("/usuarios",{
+        schema: {
+            summary: "Crear usuario",
+            description: "Esta ruta permite crear un nuevo usuario",
+            tags: ["usuarios"],
+            body: usuarioPostSchema,
+            response: {
+            201: usuarioSchema,
+            },
+        },
+    },
+    async function handler(request, reply) {
+        const { nombre, isAdmin } = request.body as {
+        nombre: string;
+        isAdmin: boolean;
+    };
+    const usuario = {
+        nombre,
+        isAdmin,
+        id_usuario: ultimoId++,
+    };
+    usuarios.push(usuario);
+    return reply.code(201).send(usuario);
+    }
+);
+
+    fastify.delete("/usuarios/:id",{
+        schema: {
+            summary: "Eliminar usuario",
+            description: "Esta ruta permite eliminar un usuario",
+            tags: ["usuarios"],
+            params: {
+                type: "object",
+                properties: {
+                    id:{
+                        type:"number"
+                    }
+                },
+                required: ["id"],
+            },
+            response: {
+            204: {type: "null"},
+            404: {type: "null"},
+            },
+        },
+        },
+        async function handler(request, reply) {
+        const { id } = request.params as { id: number };
+        const index = usuarios.findIndex((u) => u.id_usuario == id);
+        if (index === -1) {
+            return reply.code(404).send();
+        }
+        usuarios.splice(index, 1);
+        return reply.code(204).send();
+        }
+    );
+    fastify.get("/usuarios/:id",{
+        schema: {
+            summary: "Encontrar usuario en específico",
+            description: "Esta ruta permite encontrar un usuario por su ID",
+            tags: ["usuarios"],
+            params: {
+            type: "object",
+            properties: {
+                id: { 
+                    type: "number"},
+            },
+            },
+            response: {
+            200: usuarioSchema,
+            404: {
+                type: "null"
+            },
+            },
+        },
+    },
+    async function handler(request, reply) {
+    const { id } = request.params as { id: number };
+    const usuario = usuarios.find((u) => u.id_usuario == id);
+    if (!usuario) {
+        return reply.code(404).send();
+    }
+    return reply.code(200).send(usuario);
+
+    });
+}
 
 
 export default usuariosRoutes;
