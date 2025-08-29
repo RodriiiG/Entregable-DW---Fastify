@@ -1,4 +1,7 @@
 import type { FastifyInstance, FastifySchema } from "fastify"
+import { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
+import { Type } from "@sinclair/typebox";
+import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 type Usuario = {
     id_usuario: number,
@@ -14,18 +17,16 @@ const usuarios : Usuario[] = [
 
 let ultimoId = usuarios.length + 1;
 
-const usuarioSchema ={
-    type: "object",
-    properties: {
-        id_usuario : {type:"number", min:0},
-        nombre : {type: "string", minLength:2},
-        isAdmin: {type: "boolean"}
 
-    },
-    required : ["nombre", "id_usuario", "isAdmin"],
-    additionalProperties: true,
+const usuarioSchema =Type.Object({
+    id_usuario: Type.Integer(),
+    nombre: Type.String(),
+    isAdmin: Type.Boolean()
+},{
+    //Otras opciones
 }
-
+)
+    
 const usuarioPostSchema = {
     type: "object",
     properties: {
