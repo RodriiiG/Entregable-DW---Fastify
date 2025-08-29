@@ -88,8 +88,7 @@ async function usuariosRoutes(fastify: FastifyInstance, options: object) {
         id_usuario: ultimoId++,
       };
       usuarios.push(usuario);
-      reply.code(201);
-      return usuario;
+      return reply.code(201).send(usuario);
     }
   );
 
@@ -123,10 +122,42 @@ async function usuariosRoutes(fastify: FastifyInstance, options: object) {
       const { id } = request.params as { id: number };
       const index = usuarios.findIndex((u) => u.id_usuario == id);
       if (index === -1) {
-        return reply.code(404);
+        return reply.code(404).send();
       }
       usuarios.splice(index, 1);
-      return reply.code(204);
+      return reply.code(204).send();
+    }
+  );
+    fastify.get(
+    "/usuarios/:id",
+    {
+      schema: {
+        summary: "Encontrar usuario en específico",
+        description: "Esta ruta permite encontrar un usuario por su ID",
+        tags: ["usuarios"],
+        params: {
+          type: "object",
+          properties: {
+            id: { 
+                type: "number"},
+          },
+        },
+        response: {
+          200: usuarioSchema,
+          404: {
+            type: "null"
+          },
+        },
+    },
+},
+    async function handler(request, reply) {
+      const { id } = request.params as { id: number };
+      const usuario = usuarios.find((u) => u.id_usuario == id);
+      if (!usuario) {
+        return reply.code(404).send();
+      }
+      return reply.code(200).send(usuario);
+ 
     }
   );
 }
