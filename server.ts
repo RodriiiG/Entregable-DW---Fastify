@@ -1,11 +1,8 @@
-//Importar fastify
-
 import Fastify from 'fastify';
-import { setTimeout } from 'timers/promises';
 import rootRoutes from './src/Rutas/rutas.ts';
 import exampleRoutes from './src/Rutas/example.ts';
 import swagger from './src/Plugins/swagger.ts';
-import usuariosRoutes from './src/Rutas/usuarios-routes.ts';
+import usuariosRoutes from './src/Rutas/usuarios/usuarios-routes.ts';
 
 const fastify = Fastify({
     logger: true

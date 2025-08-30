@@ -1,13 +1,8 @@
 import type { FastifyInstance, FastifySchema } from "fastify"
-import { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import { Type } from "@sinclair/typebox";
-import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
+import type { FastifyPluginAsyncTypebox, Static } from "@fastify/type-provider-typebox";
+import { Usuario } from "../../Model/usuarios.ts";
 
-type Usuario = {
-    id_usuario: number,
-    nombre: string,
-    isAdmin: boolean;
-}
 
 const usuarios : Usuario[] = [
     {id_usuario: 1, nombre: "Jorge", isAdmin: true},
@@ -16,16 +11,6 @@ const usuarios : Usuario[] = [
 ];
 
 let ultimoId = usuarios.length + 1;
-
-
-const usuarioSchema =Type.Object({
-    id_usuario: Type.Integer(),
-    nombre: Type.String(),
-    isAdmin: Type.Boolean()
-},{
-    //Otras opciones
-}
-)
     
 const usuarioPostSchema = {
     type: "object",
@@ -36,24 +21,17 @@ const usuarioPostSchema = {
     required: ["nombre"],
     additionalProperties: true,
 };
-
-async function usuariosRoutes (fastify: FastifyInstance, options: object){
+const usuariosRoutes:FastifyPluginAsyncTypebox = async function (fastify: FastifyInstance, options: object){
     fastify.get('/usuarios',{
         schema:{
             summary: "Ruta de usuarios",
             description: 'Descripción de la ruta de usuarios',
             tags: ["usuarios"],
-            querystring: {
-                type: "object",
-                properties:{
-                    nombre : {type: "string", minLength:2 },
-                    id_usuario : {type: "number"}
-                },
-            },
+            querystring: Type.Object({nombre:Type.Optional(Type.String({minLength: 2})), }),
             response: {
                 200 : {
                     type : "array",
-                    items: usuarioSchema
+                    items: usuarios
                 }
             }
         },
@@ -118,9 +96,9 @@ async function usuariosRoutes (fastify: FastifyInstance, options: object){
             summary: "Crear usuario",
             description: "Esta ruta permite crear un nuevo usuario",
             tags: ["usuarios"],
-            body: usuarioPostSchema,
+            body: Type.Omit(Usuario,["id_usuario"]),
             response: {
-            201: usuarioSchema,
+            201: Usuario,
             },
         },
     },
@@ -151,7 +129,7 @@ async function usuariosRoutes (fastify: FastifyInstance, options: object){
                         type:"number"
                     }
                 },
-                required: ["id"],
+                required: ["id"],
             },
             response: {
             204: {type: "null"},
@@ -174,15 +152,9 @@ async function usuariosRoutes (fastify: FastifyInstance, options: object){
             summary: "Encontrar usuario en específico",
             description: "Esta ruta permite encontrar un usuario por su ID",
             tags: ["usuarios"],
-            params: {
-            type: "object",
-            properties: {
-                id: { 
-                    type: "number"},
-            },
-            },
+            params: Type.Pick(Usuario, ["id_usuario"]),
             response: {
-            200: usuarioSchema,
+            200: Usuario,
             404: {
                 type: "null"
             },
@@ -201,4 +173,4 @@ async function usuariosRoutes (fastify: FastifyInstance, options: object){
 }
 
 
-export default usuariosRoutes;
+export default usuariosRoutes;
