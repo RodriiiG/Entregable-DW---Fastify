@@ -50,12 +50,8 @@ const usuariosRoutes: FastifyPluginAsyncTypebox = async function (
         params: Type.Pick(Usuario, ["id_usuario"]),
         body: Type.Pick(Usuario, ["isAdmin", "nombre"]),
         response: {
-          204: {
-            type: "null",
-          },
-          404: {
-            type: "null",
-          },
+          204: Type.Null(),
+          404: Type.Null(),
         },
       },
     },
@@ -110,8 +106,8 @@ const usuariosRoutes: FastifyPluginAsyncTypebox = async function (
         tags: ["usuarios"],
         params: Type.Pick(Usuario, ["id_usuario"]),
         response: {
-          204: { type: "null" },
-          404: { type: "null" },
+          204: Type.Null(),
+          404: Type.Null(),
         },
       },
     },
@@ -135,9 +131,7 @@ const usuariosRoutes: FastifyPluginAsyncTypebox = async function (
         params: Type.Pick(Usuario, ["id_usuario"]),
         response: {
           200: Usuario,
-          404: {
-            type: "null",
-          },
+          404: Type.Null(),
         },
       },
     },

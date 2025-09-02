@@ -11,9 +11,7 @@ export const Usuario = Type.Object(
     nombre: Type.String({ minLength: 2 }),
     isAdmin: Type.Optional(Type.Boolean()),
   },
-  {
-    title: "Esquema para el Usuario",
-  }
+  { additionalProperties: false }
 );
 
 export type Usuario = Static<typeof Usuario>;
