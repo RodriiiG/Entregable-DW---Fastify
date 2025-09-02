@@ -15,7 +15,7 @@ const usuarios: Usuario[] = [
 let ultimoId = usuarios.length + 1;
 
 const usuariosRoutes: FastifyPluginAsyncTypebox = async function (
-  fastify: FastifyInstance,
+  fastify,
   options: object
 ) {
   fastify.get(
@@ -34,7 +34,7 @@ const usuariosRoutes: FastifyPluginAsyncTypebox = async function (
       },
     },
     async function handler(request, reply) {
-      const query = request.query as { nombre: string };
+      const query = request.query;
       if (query.nombre) return usuarios.filter((u) => u.nombre == query.nombre);
       return usuarios;
     }
@@ -60,8 +60,8 @@ const usuariosRoutes: FastifyPluginAsyncTypebox = async function (
       },
     },
     async function handler(request, reply) {
-      const { id_usuario } = request.params as { id_usuario: number };
-      const body = request.body as { nombre: string; isAdmin: boolean };
+      const { id_usuario } = request.params;
+      const body = request.body;
 
       const usuario = usuarios.find((u) => u.id_usuario === id_usuario);
 
@@ -90,10 +90,7 @@ const usuariosRoutes: FastifyPluginAsyncTypebox = async function (
       },
     },
     async function handler(request, reply) {
-      const { nombre, isAdmin } = request.body as {
-        nombre: string;
-        isAdmin: boolean;
-      };
+      const { nombre, isAdmin } = request.body;
       const usuario = {
         nombre,
         isAdmin,
@@ -119,7 +116,7 @@ const usuariosRoutes: FastifyPluginAsyncTypebox = async function (
       },
     },
     async function handler(request, reply) {
-      const { id_usuario } = request.params as { id_usuario: number };
+      const { id_usuario } = request.params;
       const index = usuarios.findIndex((u) => u.id_usuario == id_usuario);
       if (index === -1) {
         return reply.code(404).send();
@@ -145,7 +142,7 @@ const usuariosRoutes: FastifyPluginAsyncTypebox = async function (
       },
     },
     async function handler(request, reply) {
-      const { id_usuario } = request.params as { id_usuario: number };
+      const { id_usuario } = request.params;
       const usuario = usuarios.find((u) => u.id_usuario == id_usuario);
       if (!usuario) {
         return reply.code(404).send();

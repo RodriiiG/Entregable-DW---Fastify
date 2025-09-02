@@ -3,10 +3,11 @@ import rootRoutes from "./src/Rutas/rutas.ts";
 import exampleRoutes from "./src/Rutas/example.ts";
 import swagger from "./src/Plugins/swagger.ts";
 import usuariosRoutes from "./src/rutas/usuarios/usuarios-routes.ts";
+import { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 
 const fastify = Fastify({
   logger: true,
-});
+}).withTypeProvider<TypeBoxTypeProvider>();
 
 fastify.register(swagger);
 fastify.register(rootRoutes);
