@@ -4,15 +4,8 @@ import type {
   FastifyPluginAsyncTypebox,
   Static,
 } from "@fastify/type-provider-typebox";
-import { Usuario } from "../../Model/usuarios-model.ts";
-
-const usuarios: Usuario[] = [
-  { id_usuario: 1, nombre: "Jorge", isAdmin: true },
-  { id_usuario: 2, nombre: "Rodrigo", isAdmin: false },
-  { id_usuario: 3, nombre: "Gastón", isAdmin: false },
-];
-
-let ultimoId = usuarios.length + 1;
+import { Usuario } from "../../model/usuarios-model.ts";
+import {getAll, getById, getOneBy, findAll} from "../../services/usuariorepository.ts"
 
 const usuariosRoutes: FastifyPluginAsyncTypebox = async function (
   fastify,
@@ -35,8 +28,8 @@ const usuariosRoutes: FastifyPluginAsyncTypebox = async function (
     },
     async function handler(request, reply) {
       const query = request.query;
-      if (query.nombre) return usuarios.filter((u) => u.nombre == query.nombre);
-      return usuarios;
+      if (query.nombre) return findAll(query);
+      return getAll();
     }
   );
 
@@ -137,13 +130,9 @@ const usuariosRoutes: FastifyPluginAsyncTypebox = async function (
     },
     async function handler(request, reply) {
       const { id_usuario } = request.params;
-      const usuario = usuarios.find((u) => u.id_usuario == id_usuario);
-      if (!usuario) {
-        return reply.code(404).send();
-      }
-      return reply.code(200).send(usuario);
-    }
-  );
+      reply.code(200)
+      return getById(id_usuario);
+    });
 };
 
 export default usuariosRoutes;
