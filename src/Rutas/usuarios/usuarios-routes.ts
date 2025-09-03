@@ -134,9 +134,7 @@ const usuariosRoutes: FastifyPluginAsyncTypebox = async function (
     async function handler(request, reply) {
       const usuario = await getById(request.params.id_usuario);
       if (!usuario) {
-        throw new errorNoEncontrado(
-          "Usuario con id ${request.params.id_usuario}"
-        );
+        throw new errorNoEncontrado();
       }
       await erase(request.params.id_usuario);
       return reply.code(204).send();

@@ -53,7 +53,7 @@ export async function create(
 export async function erase(id_usuario: number): Promise<void> {
   const index = usuarios.findIndex((u) => u.id_usuario == id_usuario);
   if (index === -1) {
-    throw new errorNoEncontrado("Usuario con id ${id_usuario}");
+    throw new errorNoEncontrado();
   }
   usuarios.splice(index, 1);
 }
