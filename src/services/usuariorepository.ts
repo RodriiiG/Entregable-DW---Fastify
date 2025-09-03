@@ -1,4 +1,11 @@
 import { Usuario } from "../model/usuarios-model.ts";
+import {
+  errorDesconocido,
+  errorFaltanPermisos,
+  errorNoAutenticado,
+  errorNoEncontrado,
+  bdConnectionError,
+} from "../model/errors-model.ts";
 
 const usuarios: Usuario[] = [
   { id_usuario: 1, nombre: "Jorge", isAdmin: true },
@@ -12,14 +19,18 @@ export async function getAll(): Promise<Usuario[]> {
   return usuarios;
 }
 
-export async function getById(id_usuario: number): Promise<Usuario | undefined> {
-  return usuarios.find((u) => u.id_usuario === id_usuario);
+export async function getById(id_usuario: number): Promise<Usuario> {
+  const usuario = usuarios.find((u) => u.id_usuario === id_usuario);
+  if (!usuario) throw new errorNoEncontrado();
+  return usuario;
 }
 
-export async function getOneBy(data: Partial<Usuario>): Promise<Usuario | undefined> {
-  return usuarios.find((u) => {
+export async function getOneBy(data: Partial<Usuario>): Promise<Usuario> {
+  const usuario = usuarios.find((u) => {
     Object.entries(data).every(([key, value]) => u[key] === value);
   });
+  if (!usuario) throw new errorNoEncontrado();
+  return usuario;
 }
 export async function findAll(data: Partial<Usuario>): Promise<Usuario[]> {
   return usuarios.filter((u) =>
@@ -39,23 +50,23 @@ export async function create(
   return usuarioNuevo;
 }
 
-export async function erase(id_usuario: number): Promise<void | boolean> {
+export async function erase(id_usuario: number): Promise<void> {
   const index = usuarios.findIndex((u) => u.id_usuario == id_usuario);
-  if (index === -1) return true;
+  if (index === -1) {
+    throw new errorNoEncontrado("Usuario con id ${id_usuario}");
+  }
   usuarios.splice(index, 1);
-  return false;
 }
 
-export async function update(id_usuario: number, data: Partial<Usuario>) : Promise<Usuario | undefined>{
-  const usuario = await getById(id_usuario)
-  if(usuario){
-    if(data.nombre){
-      usuario.nombre=data.nombre;
-    };
-    if(data.isAdmin){
-      usuario.isAdmin=data.isAdmin;
-    };
-    return usuario;
-  }
-  return;
+export async function update(
+  id_usuario: number,
+  data: Partial<Usuario>
+): Promise<Usuario> {
+  const usuario = await getById(id_usuario);
+  if (!usuario) throw new errorNoEncontrado();
+
+  if (data.nombre) usuario.nombre = data.nombre;
+
+  if (data.isAdmin) usuario.isAdmin = data.isAdmin;
+  return usuario;
 }

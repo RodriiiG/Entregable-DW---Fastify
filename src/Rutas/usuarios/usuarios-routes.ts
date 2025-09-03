@@ -14,6 +14,14 @@ import {
   erase,
   update,
 } from "../../services/usuariorepository.ts";
+import {
+  errorDesconocido,
+  errorNoEncontrado,
+  errorNoAutenticado,
+  errorFaltanPermisos,
+  bdConnectionError,
+} from "../../model/errors-model.ts";
+import { ErrorSchema } from "../../model/shared-model.ts";
 
 const usuariosRoutes: FastifyPluginAsyncTypebox = async function (
   fastify,
@@ -38,7 +46,7 @@ const usuariosRoutes: FastifyPluginAsyncTypebox = async function (
       const nombre = request.query.nombre;
       if (nombre) {
         const usuarios = await findAll({ nombre });
-        return reply.code(200).send(usuarios) 
+        return reply.code(200).send(usuarios);
       }
 
       return reply.code(200).send(await getAll());
@@ -55,13 +63,14 @@ const usuariosRoutes: FastifyPluginAsyncTypebox = async function (
         params: Type.Pick(Usuario, ["id_usuario"]),
         response: {
           200: Usuario,
-          404: Type.Null(),
+          404: ErrorSchema,
         },
       },
     },
     async function handler(request, reply) {
       const usuario = await getById(request.params.id_usuario);
-      return usuario ? reply.code(200).send(usuario) : reply.code(404).send();
+      if (!usuario) throw new errorNoEncontrado();
+      reply.code(200).send(usuario);
     }
   );
 
@@ -76,7 +85,7 @@ const usuariosRoutes: FastifyPluginAsyncTypebox = async function (
         body: Type.Pick(Usuario, ["isAdmin", "nombre"]),
         response: {
           204: Type.Null(),
-          404: Type.Null(),
+          404: ErrorSchema,
         },
       },
     },
@@ -84,7 +93,8 @@ const usuariosRoutes: FastifyPluginAsyncTypebox = async function (
       const { id_usuario } = request.params;
       const body = request.body;
       const usuario = await update(id_usuario, body);
-      return usuario ? reply.code(204).send() : reply.code(404).send();
+      if (!usuario) throw new errorNoEncontrado();
+      reply.code(204).send();
     }
   );
 
@@ -117,14 +127,19 @@ const usuariosRoutes: FastifyPluginAsyncTypebox = async function (
         params: Type.Pick(Usuario, ["id_usuario"]),
         response: {
           204: Type.Null(),
-          404: Type.Null(),
+          404: ErrorSchema,
         },
       },
     },
     async function handler(request, reply) {
       const usuario = await getById(request.params.id_usuario);
+      if (!usuario) {
+        throw new errorNoEncontrado(
+          "Usuario con id ${request.params.id_usuario}"
+        );
+      }
       await erase(request.params.id_usuario);
-      return usuario ? reply.code(204).send() : reply.code(404).send();
+      return reply.code(204).send();
     }
   );
 };
