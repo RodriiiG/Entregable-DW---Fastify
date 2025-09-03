@@ -20,6 +20,16 @@ export async function getByID(
   return usuarios.find((u) => u.id_usuario == id_usuario);
 }
 
+export async function getOneBy(
+  data: Omit<Usuario, "isAdmin" | "id_usuario">
+): Promise<Usuario[]> {
+  if (data && data.nombre) {
+    const usuario = usuarios.find((u) => u.nombre === data.nombre);
+    return usuario ? [usuario] : [];
+  }
+  return usuarios;
+}
+
 export async function create(
   data: Omit<Usuario, "id_usuario">
 ): Promise<Usuario> {

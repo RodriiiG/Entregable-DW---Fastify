@@ -26,7 +26,10 @@ const usuariosRoutes: FastifyPluginAsyncTypebox = async function (
         },
       },
     },
-    async () => func.getAll()
+    async (request, reply) => {
+      const { nombre } = request.query;
+      return func.getOneBy({ nombre } as Omit<Usuario, "isAdmin" | >);
+    }
   );
 
   fastify.get(
