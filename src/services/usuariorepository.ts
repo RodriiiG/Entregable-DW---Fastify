@@ -47,7 +47,7 @@ export async function erase(id_usuario: number): Promise<void | boolean> {
 }
 
 export async function update(id_usuario: number, data: Partial<Usuario>) : Promise<Usuario | undefined>{
-  const usuario = usuarios.find((u)=>u.id_usuario===id_usuario)
+  const usuario = await getById(id_usuario)
   if(usuario){
     if(data.nombre){
       usuario.nombre=data.nombre;
