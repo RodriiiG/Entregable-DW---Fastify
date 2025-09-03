@@ -4,15 +4,8 @@ import type {
   FastifyPluginAsyncTypebox,
   Static,
 } from "@fastify/type-provider-typebox";
-import { Usuario } from "../../Model/usuarios-model.ts";
-
-const usuarios: Usuario[] = [
-  { id_usuario: 1, nombre: "Jorge", isAdmin: true },
-  { id_usuario: 2, nombre: "Rodrigo", isAdmin: false },
-  { id_usuario: 3, nombre: "Gastón", isAdmin: false },
-];
-
-let ultimoId = usuarios.length + 1;
+import { Usuario } from "../../model/usuarios-model.ts";
+import * as func from "../../services/uuuu.ts";
 
 const usuariosRoutes: FastifyPluginAsyncTypebox = async function (
   fastify,
@@ -33,13 +26,30 @@ const usuariosRoutes: FastifyPluginAsyncTypebox = async function (
         },
       },
     },
-    async function handler(request, reply) {
-      const query = request.query;
-      if (query.nombre) return usuarios.filter((u) => u.nombre == query.nombre);
-      return usuarios;
+    async () => func.getAll()
+  );
+
+  fastify.get(
+    "/usuarios/:id_usuario",
+    {
+      schema: {
+        summary: "Encontrar usuario en específico",
+        description: "Esta ruta permite encontrar un usuario por su ID",
+        tags: ["usuarios"],
+        params: Type.Pick(Usuario, ["id_usuario"]),
+        response: {
+          200: Usuario,
+          404: Type.Null(),
+        },
+      },
+    },
+    async (request, reply) => {
+      const busc = await func.getByID(request.params.id_usuario);
+      return busc ? busc : reply.code(404).send();
     }
   );
 
+  /*
   fastify.put(
     "/usuarios/:id_usuario",
     {
@@ -70,7 +80,7 @@ const usuariosRoutes: FastifyPluginAsyncTypebox = async function (
 
       return reply.code(204).send();
     }
-  );
+  );*/
 
   fastify.post(
     "/usuarios",
@@ -86,14 +96,8 @@ const usuariosRoutes: FastifyPluginAsyncTypebox = async function (
       },
     },
     async function handler(request, reply) {
-      const { nombre, isAdmin } = request.body;
-      const usuario = {
-        nombre,
-        isAdmin,
-        id_usuario: ultimoId++,
-      };
-      usuarios.push(usuario);
-      return reply.code(201).send(usuario);
+      const nuevo = await func.create(request.body);
+      return reply.code(201).send(nuevo);
     }
   );
 
@@ -112,36 +116,9 @@ const usuariosRoutes: FastifyPluginAsyncTypebox = async function (
       },
     },
     async function handler(request, reply) {
-      const { id_usuario } = request.params;
-      const index = usuarios.findIndex((u) => u.id_usuario == id_usuario);
-      if (index === -1) {
-        return reply.code(404).send();
-      }
-      usuarios.splice(index, 1);
-      return reply.code(204).send();
-    }
-  );
-  fastify.get(
-    "/usuarios/:id_usuario",
-    {
-      schema: {
-        summary: "Encontrar usuario en específico",
-        description: "Esta ruta permite encontrar un usuario por su ID",
-        tags: ["usuarios"],
-        params: Type.Pick(Usuario, ["id_usuario"]),
-        response: {
-          200: Usuario,
-          404: Type.Null(),
-        },
-      },
-    },
-    async function handler(request, reply) {
-      const { id_usuario } = request.params;
-      const usuario = usuarios.find((u) => u.id_usuario == id_usuario);
-      if (!usuario) {
-        return reply.code(404).send();
-      }
-      return reply.code(200).send(usuario);
+      const id_usuario = await func.getByID(request.params.id_usuario);
+      await func.erase(request.params.id_usuario);
+      return id_usuario ? reply.code(204).send() : reply.code(404).send();
     }
   );
 };
