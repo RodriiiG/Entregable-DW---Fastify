@@ -9,7 +9,7 @@ export const Usuario = Type.Object(
   {
     id_usuario: Type.Integer(),
     nombre: Type.String({ minLength: 2 }),
-    isAdmin: Type.Optional(Type.Boolean()),
+    isAdmin: Type.Boolean(),
   },
   { additionalProperties: false }
 );

@@ -5,7 +5,15 @@ import type {
   Static,
 } from "@fastify/type-provider-typebox";
 import { Usuario } from "../../model/usuarios-model.ts";
-import * as func from "../../services/uuuu.ts";
+import {
+  getAll,
+  getById,
+  getOneBy,
+  findAll,
+  create,
+  erase,
+  update,
+} from "../../services/usuariorepository.ts";
 
 const usuariosRoutes: FastifyPluginAsyncTypebox = async function (
   fastify,
@@ -26,9 +34,14 @@ const usuariosRoutes: FastifyPluginAsyncTypebox = async function (
         },
       },
     },
-    async (request, reply) => {
-      const { nombre } = request.query;
-      return func.getOneBy({ nombre } as Omit<Usuario, "isAdmin" | >);
+    async function handler(request, reply) {
+      const nombre = request.query.nombre;
+      if (nombre) {
+        const usuarios = await findAll({ nombre });
+        return reply.code(200).send(usuarios) 
+      }
+
+      return reply.code(200).send(await getAll());
     }
   );
 
@@ -46,13 +59,12 @@ const usuariosRoutes: FastifyPluginAsyncTypebox = async function (
         },
       },
     },
-    async (request, reply) => {
-      const busc = await func.getByID(request.params.id_usuario);
-      return busc ? busc : reply.code(404).send();
+    async function handler(request, reply) {
+      const usuario = await getById(request.params.id_usuario);
+      return usuario ? reply.code(200).send(usuario) : reply.code(404).send();
     }
   );
 
-  /*
   fastify.put(
     "/usuarios/:id_usuario",
     {
@@ -71,19 +83,10 @@ const usuariosRoutes: FastifyPluginAsyncTypebox = async function (
     async function handler(request, reply) {
       const { id_usuario } = request.params;
       const body = request.body;
-
-      const usuario = usuarios.find((u) => u.id_usuario === id_usuario);
-
-      if (!usuario) {
-        return reply.code(404).send();
-      }
-
-      usuario.nombre = body.nombre;
-      usuario.isAdmin = body.isAdmin;
-
-      return reply.code(204).send();
+      const usuario = await update(id_usuario, body);
+      return usuario ? reply.code(204).send() : reply.code(404).send();
     }
-  );*/
+  );
 
   fastify.post(
     "/usuarios",
@@ -99,8 +102,8 @@ const usuariosRoutes: FastifyPluginAsyncTypebox = async function (
       },
     },
     async function handler(request, reply) {
-      const nuevo = await func.create(request.body);
-      return reply.code(201).send(nuevo);
+      const nuevousuario = await create(request.body);
+      return reply.code(201).send(nuevousuario);
     }
   );
 
@@ -119,9 +122,9 @@ const usuariosRoutes: FastifyPluginAsyncTypebox = async function (
       },
     },
     async function handler(request, reply) {
-      const id_usuario = await func.getByID(request.params.id_usuario);
-      await func.erase(request.params.id_usuario);
-      return id_usuario ? reply.code(204).send() : reply.code(404).send();
+      const usuario = await getById(request.params.id_usuario);
+      await erase(request.params.id_usuario);
+      return usuario ? reply.code(204).send() : reply.code(404).send();
     }
   );
 };
