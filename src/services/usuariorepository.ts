@@ -1,11 +1,5 @@
 import { Usuario } from "../model/usuarios-model.ts";
-import {
-  errorDesconocido,
-  errorFaltanPermisos,
-  errorNoAutenticado,
-  errorNoEncontrado,
-  bdConnectionError,
-} from "../model/errors-model.ts";
+import * as err from "../model/errors-model.ts";
 
 export const usuarios: Usuario[] = [
   { id_usuario: 1, nombre: "Jorge", isAdmin: true },
@@ -21,7 +15,7 @@ export async function getAll(): Promise<Usuario[]> {
 
 export async function getById(id_usuario: number): Promise<Usuario> {
   const usuario = usuarios.find((u) => u.id_usuario === id_usuario);
-  if (!usuario) throw new errorNoEncontrado();
+  if (!usuario) throw new err.errorNoEncontrado();
   return usuario;
 }
 
@@ -29,7 +23,7 @@ export async function getOneBy(data: Partial<Usuario>): Promise<Usuario> {
   const usuario = usuarios.find((u) => {
     Object.entries(data).every(([key, value]) => u[key] === value);
   });
-  if (!usuario) throw new errorNoEncontrado();
+  if (!usuario) throw new err.errorNoEncontrado();
   return usuario;
 }
 export async function findAll(data: Partial<Usuario>): Promise<Usuario[]> {
@@ -53,7 +47,7 @@ export async function create(
 export async function erase(id_usuario: number): Promise<void> {
   const index = usuarios.findIndex((u) => u.id_usuario == id_usuario);
   if (index === -1) {
-    throw new errorNoEncontrado();
+    throw new err.errorNoEncontrado();
   }
   usuarios.splice(index, 1);
 }
@@ -63,7 +57,7 @@ export async function update(
   data: Partial<Usuario>
 ): Promise<Usuario> {
   const usuario = await getById(id_usuario);
-  if (!usuario) throw new errorNoEncontrado();
+  if (!usuario) throw new err.errorNoEncontrado();
 
   if (data.nombre) usuario.nombre = data.nombre;
 
