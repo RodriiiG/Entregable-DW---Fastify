@@ -7,7 +7,7 @@ import {
   bdConnectionError,
 } from "../model/errors-model.ts";
 
-const usuarios: Usuario[] = [
+export const usuarios: Usuario[] = [
   { id_usuario: 1, nombre: "Jorge", isAdmin: true },
   { id_usuario: 2, nombre: "Rodrigo", isAdmin: false },
   { id_usuario: 3, nombre: "Gastón", isAdmin: false },

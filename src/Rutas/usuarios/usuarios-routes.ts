@@ -1,27 +1,13 @@
 import type { FastifyInstance, FastifySchema } from "fastify";
 import { Type } from "@sinclair/typebox";
-import type {
-  FastifyPluginAsyncTypebox,
-  Static,
-} from "@fastify/type-provider-typebox";
+import type { FastifyPluginAsyncTypebox } from "@fastify/type-provider-typebox";
 import { Usuario } from "../../model/usuarios-model.ts";
-import {
-  getAll,
-  getById,
-  getOneBy,
-  findAll,
-  create,
-  erase,
-  update,
-} from "../../services/usuariorepository.ts";
-import {
-  errorDesconocido,
-  errorNoEncontrado,
-  errorNoAutenticado,
-  errorFaltanPermisos,
-  bdConnectionError,
-} from "../../model/errors-model.ts";
+import * as err from "../../model/errors-model.ts";
+import * as func from "../../services/usuariorepository.ts";
 import { ErrorSchema } from "../../model/shared-model.ts";
+import { usuarios } from "../../services/usuariorepository.ts";
+
+const tokenPrueba = Buffer.from(JSON.stringify(usuarios)).toString("base64");
 
 const usuariosRoutes: FastifyPluginAsyncTypebox = async function (
   fastify,
@@ -45,11 +31,11 @@ const usuariosRoutes: FastifyPluginAsyncTypebox = async function (
     async function handler(request, reply) {
       const nombre = request.query.nombre;
       if (nombre) {
-        const usuarios = await findAll({ nombre });
+        const usuarios = await func.findAll({ nombre });
         return reply.code(200).send(usuarios);
       }
 
-      return reply.code(200).send(await getAll());
+      return reply.code(200).send(await func.getAll());
     }
   );
 
@@ -68,8 +54,8 @@ const usuariosRoutes: FastifyPluginAsyncTypebox = async function (
       },
     },
     async function handler(request, reply) {
-      const usuario = await getById(request.params.id_usuario);
-      if (!usuario) throw new errorNoEncontrado();
+      const usuario = await func.getById(request.params.id_usuario);
+      if (!usuario) throw new err.errorNoEncontrado();
       reply.code(200).send(usuario);
     }
   );
@@ -92,8 +78,8 @@ const usuariosRoutes: FastifyPluginAsyncTypebox = async function (
     async function handler(request, reply) {
       const { id_usuario } = request.params;
       const body = request.body;
-      const usuario = await update(id_usuario, body);
-      if (!usuario) throw new errorNoEncontrado();
+      const usuario = await func.update(id_usuario, body);
+      if (!usuario) throw new err.errorNoEncontrado();
       reply.code(204).send();
     }
   );
@@ -112,7 +98,7 @@ const usuariosRoutes: FastifyPluginAsyncTypebox = async function (
       },
     },
     async function handler(request, reply) {
-      const nuevousuario = await create(request.body);
+      const nuevousuario = await func.create(request.body);
       return reply.code(201).send(nuevousuario);
     }
   );
@@ -132,12 +118,60 @@ const usuariosRoutes: FastifyPluginAsyncTypebox = async function (
       },
     },
     async function handler(request, reply) {
-      const usuario = await getById(request.params.id_usuario);
+      const usuario = await func.getById(request.params.id_usuario);
       if (!usuario) {
-        throw new errorNoEncontrado();
+        throw new err.errorNoEncontrado();
       }
-      await erase(request.params.id_usuario);
+      await func.erase(request.params.id_usuario);
       return reply.code(204).send();
+    }
+  );
+
+  fastify.post(
+    "/login",
+    {
+      schema: {
+        summary: "Login",
+        description: "Hacer login",
+        tags: ["auth"],
+        body: Type.Object({
+          usuario: Type.String(),
+          password: Type.String(),
+        }),
+        security: [{ bearerAuth: [] }],
+      },
+    },
+    async function handler(request, reply) {
+      const { usuario, password } = request.body as {
+        usuario: string;
+        password: string;
+      };
+
+      const usuarioExiste = usuarios.find((u) => u.nombre === usuario);
+      if (password == "contraseña" && usuarioExiste)
+        return { token: tokenPrueba };
+      reply.code(401);
+      return { message: "No autorizado" };
+    }
+  );
+  fastify.get(
+    "/profile",
+    {
+      schema: {
+        summary: "Ruta Principal",
+        description: "Descripcion de la ruta principal",
+        tags: ["auth"],
+        headers: Type.Object({
+          authorization: Type.String(),
+        }),
+        security: [{ bearerAuth: [] }],
+      },
+    },
+    async (request, reply) => {
+      const token = request.headers.authorization!.slice(7);
+      if (!token) throw new err.errorFaltanPermisos("Falta TOKEN");
+      const usuario = JSON.parse(Buffer.from(token, "base64").toString("utf8"));
+      return usuario;
     }
   );
 };

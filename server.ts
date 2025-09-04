@@ -6,9 +6,10 @@ import swagger from "./src/Plugins/swagger.ts";
 import usuariosRoutes from "./src/rutas/usuarios/usuarios-routes.ts";
 import type { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import sensible from "./src/plugins/sensible.ts";
+//import { auth } from "./src/login/auth.ts";
 
 const loggerOptions = {
-  level: "trace",
+  level: process.env.FASTIFY_LOG_LEVEL || "trace",
   transport: {
     target: "pino-pretty",
     options: {
@@ -40,13 +41,21 @@ const fastify: FastifyInstance =
 fastify.register(sensible);
 fastify.register(swagger);
 fastify.register(rootRoutes);
+//fastify.register(auth);
 fastify.register(exampleRoutes);
 fastify.register(usuariosRoutes);
 
-fastify.listen(fastifyListenOptions, (err: any) => {
+await fastify.listen(fastifyListenOptions, (err: any) => {
   if (err) {
     fastify.log.error(err);
     fastify.close();
     process.exit(1);
   }
 });
+
+fastify.log.trace("logueo un trace. ");
+fastify.log.debug("logueo un debug. ");
+fastify.log.info("logueo un info. ");
+fastify.log.warn("logueo un warn. ");
+fastify.log.error("logueo un error. ");
+fastify.log.fatal("logueo un fatal. ");
