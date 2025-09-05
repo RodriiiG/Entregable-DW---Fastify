@@ -6,6 +6,9 @@ import * as err from "../model/errors-model.ts";
 import * as func from "../services/usuariorepository.ts";
 import { ErrorSchema } from "../model/shared-model.ts";
 import { usuarios } from "../services/usuariorepository.ts";
+import type { SignOptions } from "@fastify/jwt";
+import jwt from "../plugins/jwt.ts";
+
 
 const tokenPrueba = Buffer.from(JSON.stringify(usuarios)).toString("base64");
 
@@ -20,24 +23,23 @@ export const auth: FastifyPluginAsyncTypebox = async (
         summary: "Login",
         description: "Hacer login",
         tags: ["auth"],
-        body: Type.Object({
-          usuario: Type.String(),
-          password: Type.String(),
-        }),
+        body: Usuario,
         security: [{ bearerAuth: [] }],
       },
     },
     async function handler(request, reply) {
-      const { usuario, password } = request.body as {
-        usuario: string;
-        password: string;
-      };
+      const payload : Usuario = {
+        nombre: "Rodrigo",
+        id_usuario: 1,
+        isAdmin: true
+      }
 
-      const usuarioExiste = usuarios.find((u) => u.nombre === usuario);
-      if (password == "contraseña" && usuarioExiste)
-        return { token: tokenPrueba };
-      reply.code(401);
-      return { message: "No autorizado" };
+      const signOptions: SignOptions = {
+        expiresIn: "8h",
+        notBefore: 1,
+      }
+      const token = fastify.jwt.sign(payload, signOptions)
+      return {token};
     }
   );
   fastify.get(
@@ -50,14 +52,17 @@ export const auth: FastifyPluginAsyncTypebox = async (
         headers: Type.Object({
           authorization: Type.String(),
         }),
+        response: {
+          200: Usuario
+        },
         security: [{ bearerAuth: [] }],
+      },
+      onRequest: async(request, reply) => {
+        await request.jwtVerify();
       },
     },
     async (request, reply) => {
-      const token = request.headers.authorization!.slice(7);
-      if (!token) throw new err.errorFaltanPermisos("Falta TOKEN");
-      const usuario = JSON.parse(Buffer.from(token, "base64").toString("utf8"));
-      return usuario;
+      return request.user;
     }
   );
 };

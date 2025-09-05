@@ -7,6 +7,8 @@ import usuariosRoutes from "./src/rutas/usuarios/usuarios-routes.ts";
 import type { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import sensible from "./src/plugins/sensible.ts";
 import { auth } from "./src/login/auth.ts";
+import jwt from "./src/plugins/jwt.ts";
+import decoradores from "./src/decorators/decoradores.ts";
 
 const loggerOptions = {
   level: process.env.FASTIFY_LOG_LEVEL || "trace",
@@ -38,7 +40,10 @@ const fastifyListenOptions: FastifyListenOptions = {
 const fastify: FastifyInstance =
   Fastify(fastifyOptions).withTypeProvider<TypeBoxTypeProvider>();
 
+
+await fastify.register(decoradores)
 fastify.register(sensible);
+fastify.register(jwt);
 fastify.register(swagger);
 fastify.register(rootRoutes);
 fastify.register(auth);
@@ -59,3 +64,4 @@ fastify.log.info("logueo un info. ");
 fastify.log.warn("logueo un warn. ");
 fastify.log.error("logueo un error. ");
 fastify.log.fatal("logueo un fatal. ");
+

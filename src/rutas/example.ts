@@ -9,7 +9,8 @@ async function exampleRoutes (fastify: FastifyInstance, options: object) {
         }as FastifySchema
     },
     async (request,reply) =>{
-        return {hello: "world"}
+        fastify.log.error(fastify.miObjeto)
+        fastify.log.fatal(fastify.miFuncion("Rodri"))
     })
 }
 
