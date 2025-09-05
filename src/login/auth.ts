@@ -1,19 +1,17 @@
-/*import { Type } from "@sinclair/typebox";
+import { Type } from "@sinclair/typebox";
 import type { FastifyPluginAsyncTypebox } from "@fastify/type-provider-typebox";
 import { Usuario } from "../model/usuarios-model.ts";
 import { errorFaltanPermisos } from "../model/errors-model.ts";
-
-const usuarios: Usuario[] = [
-  { id_usuario: 1, nombre: "Jorge", isAdmin: true },
-  { id_usuario: 2, nombre: "Rodrigo", isAdmin: false },
-  { id_usuario: 3, nombre: "Gastón", isAdmin: false },
-];
+import * as err from "../model/errors-model.ts";
+import * as func from "../services/usuariorepository.ts";
+import { ErrorSchema } from "../model/shared-model.ts";
+import { usuarios } from "../services/usuariorepository.ts";
 
 const tokenPrueba = Buffer.from(JSON.stringify(usuarios)).toString("base64");
 
 export const auth: FastifyPluginAsyncTypebox = async (
   fastify,
-  opts
+  options: object
 ): Promise<void> => {
   fastify.post(
     "/login",
@@ -57,22 +55,11 @@ export const auth: FastifyPluginAsyncTypebox = async (
     },
     async (request, reply) => {
       const token = request.headers.authorization!.slice(7);
-      if (!token) throw new errorFaltanPermisos("Falta TOKEN");
+      if (!token) throw new err.errorFaltanPermisos("Falta TOKEN");
       const usuario = JSON.parse(Buffer.from(token, "base64").toString("utf8"));
       return usuario;
     }
   );
 };
-export default auth;
 
-onRequest: async function (request, reply) {
-      const token = request.headers.authorization?.slice(7);
-      if (!token) {
-        reply.code(401);
-        return { message: "No autorizado" };
-      }
-      const usuario = JSON.parse(
-        Buffer.from(token, "base64").toString("utf-8")
-      );
-      request.user = usuario;
-    },*/
+export default auth;

@@ -1,12 +1,12 @@
 import Fastify from "fastify";
 import type { FastifyInstance, FastifyListenOptions } from "fastify";
-import rootRoutes from "./src/Rutas/rutas.ts";
-import exampleRoutes from "./src/Rutas/example.ts";
-import swagger from "./src/Plugins/swagger.ts";
+import rootRoutes from "./src/rutas/rutas.ts";
+import exampleRoutes from "./src/rutas/example.ts";
+import swagger from "./src/plugins/swagger.ts";
 import usuariosRoutes from "./src/rutas/usuarios/usuarios-routes.ts";
 import type { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import sensible from "./src/plugins/sensible.ts";
-//import { auth } from "./src/login/auth.ts";
+import { auth } from "./src/login/auth.ts";
 
 const loggerOptions = {
   level: process.env.FASTIFY_LOG_LEVEL || "trace",
@@ -41,7 +41,7 @@ const fastify: FastifyInstance =
 fastify.register(sensible);
 fastify.register(swagger);
 fastify.register(rootRoutes);
-//fastify.register(auth);
+fastify.register(auth);
 fastify.register(exampleRoutes);
 fastify.register(usuariosRoutes);
 
