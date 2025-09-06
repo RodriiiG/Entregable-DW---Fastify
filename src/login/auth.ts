@@ -6,8 +6,9 @@ import * as err from "../model/errors-model.ts";
 import * as func from "../services/usuariorepository.ts";
 import { ErrorSchema } from "../model/shared-model.ts";
 import { usuarios } from "../services/usuariorepository.ts";
+import type { SignOptions } from "@fastify/jwt";
 
-const tokenPrueba = Buffer.from(JSON.stringify(usuarios)).toString("base64");
+//const tokenPrueba = Buffer.from(JSON.stringify(usuarios)).toString("base64");
 
 export const auth: FastifyPluginAsyncTypebox = async (
   fastify,
@@ -22,22 +23,32 @@ export const auth: FastifyPluginAsyncTypebox = async (
         tags: ["auth"],
         body: Type.Object({
           usuario: Type.String(),
-          password: Type.String(),
+          //password: Type.String(),
         }),
-        security: [{ bearerAuth: [] }],
+        //security: [{ bearerAuth: [] }],
       },
     },
     async function handler(request, reply) {
-      const { usuario, password } = request.body as {
+      /*const { usuario, password } = request.body as {
         usuario: string;
         password: string;
+        isAdmin: boolean;
+      };*/
+
+      const payload: Usuario = {
+        nombre: "Gasti",
+        id_usuario: 5,
+        isAdmin: true,
       };
 
-      const usuarioExiste = usuarios.find((u) => u.nombre === usuario);
-      if (password == "contraseña" && usuarioExiste)
-        return { token: tokenPrueba };
-      reply.code(401);
-      return { message: "No autorizado" };
+      const signOptions: SignOptions = {
+        expiresIn: "8h",
+        notBefore: 0,
+      };
+      const token = fastify.jwt.sign(payload, signOptions);
+      //if (password == "contraseña") return { token };
+      //reply.code(401);
+      return { token };
     }
   );
   fastify.get(
@@ -52,12 +63,17 @@ export const auth: FastifyPluginAsyncTypebox = async (
         }),
         security: [{ bearerAuth: [] }],
       },
+      onRequest: async (request, reply) => {
+        await request.jwtVerify();
+      },
     },
     async (request, reply) => {
-      const token = request.headers.authorization!.slice(7);
+      await request.jwtVerify();
+      return request.user;
+      /*const token = request.headers.authorization!.slice(7);
       if (!token) throw new err.errorFaltanPermisos("Falta TOKEN");
       const usuario = JSON.parse(Buffer.from(token, "base64").toString("utf8"));
-      return usuario;
+      return usuario;*/
     }
   );
 };

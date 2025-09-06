@@ -118,6 +118,7 @@ const usuariosRoutes: FastifyPluginAsyncTypebox = async function (
       },
     },
     async function handler(request, reply) {
+      fastify.log.fatal(fastify.miFuncion("GASTON"));
       const usuario = await func.getById(request.params.id_usuario);
       if (!usuario) {
         throw new err.errorNoEncontrado();
